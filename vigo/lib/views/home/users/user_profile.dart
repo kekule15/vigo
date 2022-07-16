@@ -9,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:vigo/providers/auth_provider.dart';
+import 'package:vigo/providers/home_navigation_provider.dart';
 import 'package:vigo/utils/constants.dart';
 import 'package:vigo/views/home/users/edit_user.dart';
 import 'package:vigo/views/home/users/list_user.dart';
@@ -78,6 +79,7 @@ class _UserProfileState extends ConsumerState<UserProfile> {
   @override
   Widget build(BuildContext context) {
     var authservice = ref.watch(authViewModel);
+    final viewModel = ref.watch(homeViewModel);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -96,10 +98,8 @@ class _UserProfileState extends ConsumerState<UserProfile> {
                     InkWell(
                       onTap: (() {
                         authservice.getAllUserAdmin();
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const ListUsers()));
+
+                        viewModel.changeIndex(1);
                       }),
                       child: Container(
                         height: 35,

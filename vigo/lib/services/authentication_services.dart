@@ -29,11 +29,11 @@ class AuthServiceImplementation {
       );
       admin.doc(data.user!.uid).set({
         'timesStamp':DateTime.now().toString(),
-        
         'email': email,
         'name': name,
         'phone': number,
-        'picture': picture
+        'picture': picture,
+        'lastMessage': '',
       }).then((value) {
         Fluttertoast.showToast(
             msg: "User Added Successfully",

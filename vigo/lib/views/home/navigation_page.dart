@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:googleapis/admin/directory_v1.dart';
@@ -21,7 +20,7 @@ class _HomeNavigation extends ConsumerState<HomeNavigation> {
   @override
   Widget build(BuildContext context) {
     final _viewModel = ref.watch(homeViewModel);
-      var authservice = ref.watch(authViewModel);
+    var authservice = ref.watch(authViewModel);
     // final user = _viewModel.user.data;
     Future<bool> _onBackPressed() {
       return Future.delayed(const Duration(seconds: 2));
@@ -31,7 +30,7 @@ class _HomeNavigation extends ConsumerState<HomeNavigation> {
       onWillPop: _onBackPressed,
       child: Scaffold(
         backgroundColor: Theme.of(context).drawerTheme.backgroundColor,
-        body: _pages.elementAt(ref.watch(homeViewModel).selectedIndex),
+        body: getPage(ref.watch(homeViewModel).selectedIndex),
         drawer: const MyDrawerPage(),
         bottomNavigationBar: Theme(
           data: Theme.of(context),
@@ -63,7 +62,6 @@ class _HomeNavigation extends ConsumerState<HomeNavigation> {
                     : const Icon(Icons.chat),
                 label: "Chat",
               ),
-             
             ],
           ),
         ),
@@ -71,9 +69,18 @@ class _HomeNavigation extends ConsumerState<HomeNavigation> {
     );
   }
 
-  static const List<Widget> _pages = <Widget>[
-    UserProfile(),
-    ListUsers(),
-    
-  ];
+  Widget getPage(int index) {
+    var authservice = ref.watch(authViewModel);
+
+    switch (index) {
+      case 0:
+        return UserProfile();
+      case 1:
+       
+        return ListUsers();
+
+      default:
+        return UserProfile();
+    }
+  }
 }

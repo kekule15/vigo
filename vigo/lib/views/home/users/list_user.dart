@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:vigo/providers/auth_provider.dart';
 import 'package:vigo/styles/custom_colors.dart';
+import 'package:vigo/views/home/users/chat_page.dart';
 
 class ListUsers extends ConsumerStatefulWidget {
   const ListUsers({Key? key}) : super(key: key);
@@ -16,6 +17,8 @@ class ListUsers extends ConsumerStatefulWidget {
 
 class _ListUsersState extends ConsumerState<ListUsers> {
   GetStorage box = GetStorage();
+  final FirebaseAuth auth = FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     var authservice = ref.watch(authViewModel);
@@ -58,19 +61,28 @@ class _ListUsersState extends ConsumerState<ListUsers> {
                                   height: 80,
                                   width: MediaQuery.of(context).size.width,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
+                                    //borderRadius: BorderRadius.circular(15),
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
                                           color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 5,
-                                          spreadRadius: 2,
+                                          blurRadius: 1,
+                                          spreadRadius: 1,
                                           offset: Offset(0.1, 0.3)),
                                     ],
                                   ),
                                   child: Center(
                                     child: ListTile(
                                       onTap: () {
+                                        var peerid = box.read('id') +
+                                            '_' +
+                                            authservice
+                                                .allUserAdmins.data![index].id;
+                                        Get.to(() => Chat(
+                                            peerid: peerid,
+                                            selectedId: authservice
+                                                .allUserAdmins.data![index].id,
+                                            userid: box.read('id')));
                                         // Get.to(() => ViewAdminDetails(
                                         //       name: authservice.allUserAdmins
                                         //           .data![index]['name'],
@@ -102,25 +114,23 @@ class _ListUsersState extends ConsumerState<ListUsers> {
                                               fontSize: 16,
                                               fontWeight: FontWeight.w400,
                                               color: Colors.black)),
-                                      subtitle: Text(
-                                          authservice.allUserAdmins.data![index]
-                                              ['email'],
-                                          style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w300,
-                                              color: Colors.grey)),
-                                      trailing: InkWell(
-                                        onTap: () {
-                                          showDialogWithFields();
-                                        },
-                                        child: CircleAvatar(
-                                            radius: 16,
-                                            backgroundColor: CustomColors.grey
-                                                .withOpacity(0.2),
-                                            child: const Icon(
-                                              Icons.close,
-                                              color: Colors.red,
-                                            )),
+                                      subtitle: SizedBox(
+                                        width: 200,
+                                        child: Text(
+                                            authservice.allUserAdmins
+                                                            .data![index]
+                                                        ['lastMessage'] ==
+                                                    ''
+                                                ? authservice.allUserAdmins
+                                                    .data![index]['email']
+                                                : authservice.allUserAdmins
+                                                        .data![index]
+                                                    ['lastMessage'],
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w300,
+                                                overflow: TextOverflow.ellipsis,
+                                                color: Colors.grey)),
                                       ),
                                     ),
                                   ),

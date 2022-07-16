@@ -30,6 +30,8 @@ class AuthViewModel extends BaseViewModel {
   GetStorage box = GetStorage();
   bool uploadImage = false;
 
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
   userLoginService({required String email, required String password}) async {
     isLoading = true;
     notifyListeners();
@@ -84,6 +86,8 @@ class AuthViewModel extends BaseViewModel {
       box.write('email', data['email']);
       box.write('phone', data['phone']);
       box.write('picture', data['picture']);
+      box.write('lastMessage', data['lastMessage']);
+      box.write('id', data.id);
 
       notifyListeners();
       print('my data ${data['name']}');
@@ -103,7 +107,7 @@ class AuthViewModel extends BaseViewModel {
     final firestoreInstance = FirebaseFirestore.instance.collection('Users');
 
     await firestoreInstance
-        .where('name', isNotEqualTo: loggedUser.data!['name'])
+        .orderBy('timesStamp', descending: true)
         .get()
         .then((value) {
       if (value.docs.isEmpty != true) {
@@ -139,6 +143,69 @@ class AuthViewModel extends BaseViewModel {
           backgroundColor: Colors.black,
           textColor: Colors.white,
           fontSize: 16.0);
+    });
+  }
+
+  //chat user
+  sendMessage({
+    String? selectedUserID,
+    String? content,
+    String? peerId
+  }) async {
+    var documentReference = firestore
+        .collection('chat')
+        .doc(peerId)
+        .collection('Messages')
+        .doc(DateTime.now().millisecondsSinceEpoch.toString());
+
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      transaction.set(
+        documentReference,
+        {
+          'idFrom': _auth.currentUser!.uid,
+          'idTo': selectedUserID,
+          'timesStamp': FieldValue.serverTimestamp(),
+          'content': content,
+        },
+      );
+    }).then((value) async {
+      getUserDetails();
+      final firestoreInstance = FirebaseFirestore.instance.collection('Users');
+      await firestoreInstance.doc(_auth.currentUser!.uid).update({
+        "lastMessage": content,
+        'timesStamp': DateTime.now().toString(),
+      }).then((value) {
+        getUserDetails();
+        box.write('lastMessage', content);
+
+        notifyListeners();
+      });
+      await firestoreInstance.doc(selectedUserID!).update({
+        "lastMessage": content,
+        'timesStamp': DateTime.now().toString(),
+      }).then((value) {
+        getUserDetails();
+        box.write('lastMessage', content);
+
+        notifyListeners();
+      });
+      // var data = firestore
+      //     .collection('chat')
+      //     .doc(selectedUserID)
+      //     .collection('Messages')
+      //     .doc(DateTime.now().millisecondsSinceEpoch.toString());
+
+      // FirebaseFirestore.instance.runTransaction((transaction) async {
+      //   transaction.set(
+      //     data,
+      //     {
+      //       'idFrom': _auth.currentUser!.uid,
+      //       'idTo': selectedUserID,
+      //       'timesStamp': FieldValue.serverTimestamp(),
+      //       'content': content,
+      //     },
+      //   );
+      // });
     });
   }
 }
