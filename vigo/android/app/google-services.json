@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "737782481081",
+    "project_id": "vigo-203bd",
+    "storage_bucket": "vigo-203bd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:737782481081:android:da70d3990934fb306fdb68",
+        "android_client_info": {
+          "package_name": "com.example.vigo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "737782481081-0ucptg51nmusgh64o2lvr2ovdg8btl8e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkpNALjX3IK48SeFg8UGZdrwwiEKrq4rE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "737782481081-0ucptg51nmusgh64o2lvr2ovdg8btl8e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

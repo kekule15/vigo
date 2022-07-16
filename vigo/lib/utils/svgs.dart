@@ -1,0 +1,1 @@
+ const peopleIcon = 'assets/svgs/people.svg';
