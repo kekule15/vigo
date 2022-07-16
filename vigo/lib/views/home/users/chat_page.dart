@@ -46,12 +46,19 @@ class _ChatState extends ConsumerState<Chat> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    print('ebuka ${widget.peerid}');
+    super.initState();
+  }
+
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
     var authservice = ref.watch(authViewModel);
+    print('ebuka ${widget.peerid}');
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -123,7 +130,7 @@ class _ChatState extends ConsumerState<Chat> {
                           .collection('chat')
                           .doc(widget.peerid)
                           .collection('Messages')
-                          .orderBy('timestamp', descending: true)
+                          .orderBy('timesStamp', descending: true)
                           .snapshots(),
                       builder: (context, AsyncSnapshot snapshot) {
                         if (snapshot.data == null) {
@@ -170,53 +177,51 @@ class _ChatState extends ConsumerState<Chat> {
                               return Padding(
                                   padding:
                                       EdgeInsets.symmetric(horizontal: 12.0),
-                                  child: buildItem(
-                                      index, snapshot.data.docs[index]));
-                              // Container(
-                              //   padding: const EdgeInsets.only(
-                              //       left: 14,
-                              //       right: 14,
-                              //       top: 10,
-                              //       bottom: 10),
-                              //   child: Align(
-                              //     alignment: (widget.userid ==
-                              //             snapshot.data.docs[index]
-                              //                 ['idFrom'])
-                              //         ? Alignment.topRight
-                              //         : Alignment.topLeft,
-                              //     child: Column(
-                              //       crossAxisAlignment: widget.userid ==
-                              //               snapshot.data.docs[index]
-                              //                   ['idFrom']
-                              //           ? CrossAxisAlignment.end
-                              //           : CrossAxisAlignment.start,
-                              //       children: [
-                              //         Container(
-                              //           decoration: BoxDecoration(
-                              //               borderRadius:
-                              //                   BorderRadius.circular(20),
-                              //               color: (widget.userid ==
-                              //                       snapshot.data
-                              //                               .docs[index]
-                              //                           ['idFrom'])
-                              //                   ? Colors.grey.shade400
-                              //                   : Colors.red[200]),
-                              //           padding: EdgeInsets.all(16),
-                              //           child: Text(
-                              //             snapshot.data.docs[index]
-                              //                 ['content'],
-                              //             style: TextStyle(fontSize: 15),
-                              //           ),
-                              //         ),
-                              //         Icon(
-                              //           Icons.done_all,
-                              //           color: Colors.grey,
-                              //           size: 17,
-                              //         )
-                              //       ],
-                              //     ),
-                              //   ),
-                              // ));
+                                  child: Container(
+                                    padding: const EdgeInsets.only(
+                                        left: 14,
+                                        right: 14,
+                                        top: 10,
+                                        bottom: 10),
+                                    child: Align(
+                                      alignment: (widget.userid ==
+                                              snapshot.data.docs[index]
+                                                  ['idFrom'])
+                                          ? Alignment.topRight
+                                          : Alignment.topLeft,
+                                      child: Column(
+                                        crossAxisAlignment: widget.userid ==
+                                                snapshot.data.docs[index]
+                                                    ['idFrom']
+                                            ? CrossAxisAlignment.end
+                                            : CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                color: (widget.userid ==
+                                                        snapshot.data
+                                                                .docs[index]
+                                                            ['idFrom'])
+                                                    ? Colors.grey.shade400
+                                                    : Colors.red[200]),
+                                            padding: EdgeInsets.all(16),
+                                            child: Text(
+                                              snapshot.data.docs[index]
+                                                  ['content'],
+                                              style: TextStyle(fontSize: 15),
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.done_all,
+                                            color: Colors.grey,
+                                            size: 17,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ));
                             });
                       }),
                 ),

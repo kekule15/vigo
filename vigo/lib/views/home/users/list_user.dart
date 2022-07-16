@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,9 +20,19 @@ class _ListUsersState extends ConsumerState<ListUsers> {
   GetStorage box = GetStorage();
   final FirebaseAuth auth = FirebaseAuth.instance;
 
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>? data;
+
+  bool load = true;
+
   @override
   Widget build(BuildContext context) {
     var authservice = ref.watch(authViewModel);
+    Future.delayed(Duration.zero, () {
+      return Container();
+    });
+    authservice.allUserAdmins.data!
+        .removeWhere((element) => element['email'] == box.read('email'));
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -33,29 +44,35 @@ class _ListUsersState extends ConsumerState<ListUsers> {
         ),
       ),
       backgroundColor: Colors.white,
-      body: ListView(
-        shrinkWrap: true,
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        children: [
-          const SizedBox(
-            height: 30,
-          ),
-          authservice.allUserAdmins.data == null
-              ? const Center(
-                  child: SizedBox(
-                      height: 30,
-                      width: 30,
-                      child: CircularProgressIndicator()),
-                )
-              : authservice.allUserAdmins.data!.isEmpty == true
-                  ? const Center(
-                      child: Text('No User here'),
-                    )
-                  : Column(
-                      children: List.generate(
-                          authservice.allUserAdmins.data!.length,
-                          (index) => Padding(
+      body: authservice.allUserAdmins.data == null
+          ? const Center(
+              child: SizedBox(
+                  height: 30, width: 30, child: CircularProgressIndicator()),
+            )
+          : ListView(
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              children: [
+                const SizedBox(
+                  height: 30,
+                ),
+                authservice.allUserAdmins.data == null
+                    ? const Center(
+                        child: SizedBox(
+                            height: 30,
+                            width: 30,
+                            child: CircularProgressIndicator()),
+                      )
+                    : authservice.allUserAdmins.data!.isEmpty == true
+                        ? const Center(
+                            child: Text('No User here'),
+                          )
+                        : Column(
+                            children: List.generate(
+                                authservice.allUserAdmins.data!.length,
+                                (index) {
+                              return Padding(
                                 padding: const EdgeInsets.only(bottom: 20),
                                 child: Container(
                                   height: 80,
@@ -135,10 +152,11 @@ class _ListUsersState extends ConsumerState<ListUsers> {
                                     ),
                                   ),
                                 ),
-                              )),
-                    )
-        ],
-      ),
+                              );
+                            }),
+                          )
+              ],
+            ),
     );
   }
 
