@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:vigo/providers/auth_provider.dart';
 import 'package:vigo/providers/home_navigation_provider.dart';
 import 'package:vigo/utils/constants.dart';
+import 'package:vigo/views/home/home_drawer.dart';
 import 'package:vigo/views/home/users/edit_user.dart';
 import 'package:vigo/views/home/users/list_user.dart';
 
@@ -75,14 +76,27 @@ class _UserProfileState extends ConsumerState<UserProfile> {
     // Navigator.pop(cxt);
   }
 
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _openMyDrawer() {
+    _scaffoldKey.currentState!.openDrawer();
+  }
+
   String? imageUrl;
   @override
   Widget build(BuildContext context) {
     var authservice = ref.watch(authViewModel);
     final viewModel = ref.watch(homeViewModel);
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: MyDrawerPage(),
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        leading: InkWell(
+            onTap: () {
+              _openMyDrawer();
+            },
+            child: Icon(Icons.menu, color: Colors.black)),
         elevation: 0,
         title: Text(
           'Welcome ',
@@ -126,36 +140,34 @@ class _UserProfileState extends ConsumerState<UserProfile> {
                     ),
                   ],
                 ),
-                const SizedBox(
-                  width: 20,
-                ),
-                InkWell(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const EditUser()));
-                  },
-                  child: Container(
-                    height: 35,
-                    width: 35,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        begin: Alignment.topRight,
-                        end: Alignment.bottomLeft,
-                        colors: [
-                          Constants.color1,
-                          Constants.color2,
-                        ],
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.edit_note,
-                      color: Colors.white,
-                    ),
-                  ),
-                )
+
+                // InkWell(
+                //   onTap: () {
+                //     Navigator.push(
+                //         context,
+                //         MaterialPageRoute(
+                //             builder: (context) => const EditUser()));
+                //   },
+                //   child: Container(
+                //     height: 35,
+                //     width: 35,
+                //     decoration: const BoxDecoration(
+                //       shape: BoxShape.circle,
+                //       gradient: LinearGradient(
+                //         begin: Alignment.topRight,
+                //         end: Alignment.bottomLeft,
+                //         colors: [
+                //           Constants.color1,
+                //           Constants.color2,
+                //         ],
+                //       ),
+                //     ),
+                //     child: const Icon(
+                //       Icons.edit_note,
+                //       color: Colors.white,
+                //     ),
+                //   ),
+                // )
               ],
             ),
           )
@@ -175,7 +187,7 @@ class _UserProfileState extends ConsumerState<UserProfile> {
               children: <Widget>[
                 InkWell(
                     onTap: () async {
-                      await takePhoto(ImageSource.gallery, context);
+                      // await takePhoto(ImageSource.gallery, context);
                     },
                     child: Stack(
                       children: [
@@ -192,22 +204,6 @@ class _UserProfileState extends ConsumerState<UserProfile> {
                                       image: NetworkImage(box.read('picture')),
                                       fit: BoxFit.cover)),
                         ),
-                        authservice.uploadImage == true
-                            ? const Positioned(
-                                top: 0,
-                                bottom: 0,
-                                right: 0,
-                                left: 0,
-                                child: Center(
-                                  child: SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                ))
-                            : const SizedBox(),
                       ],
                     )),
                 InkWell(

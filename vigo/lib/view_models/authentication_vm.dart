@@ -112,13 +112,6 @@ class AuthViewModel extends BaseViewModel {
         .get()
         .then((value) {
       if (value.docs.isEmpty != true) {
-        // for (var i = 0; i < value.docs.length; i++) {
-        //   data.add(value.docs[i]['name']);
-        // }
-        // for (var element in value.docs) {
-        //   data.add(element);
-        //   data.removeWhere((element) => box.read('email') == element['email']);
-        // }
         allUserAdmins.onSuccess(value.docs);
 
         notifyListeners();

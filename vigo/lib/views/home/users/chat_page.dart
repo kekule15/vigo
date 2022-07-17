@@ -8,17 +8,21 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:vigo/providers/auth_provider.dart';
 import 'package:vigo/utils/constants.dart';
+import 'package:get/get.dart';
 
 class Chat extends ConsumerStatefulWidget {
   final String? peerid;
   final String? userid;
   final String? selectedId;
+  final String? name;
 
-  Chat({Key? key, this.peerid, this.userid, this.selectedId}) : super(key: key);
+  Chat({Key? key, this.peerid, this.userid, this.selectedId, this.name})
+      : super(key: key);
 
   @override
   _ChatState createState() => _ChatState();
@@ -54,243 +58,283 @@ class _ChatState extends ConsumerState<Chat> {
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  GetStorage box = GetStorage();
+  Future<bool> _onBackPressed() {
+    var authservice = ref.watch(authViewModel);
+    return Future.delayed(const Duration(seconds: 1), () {
+      authservice.getAllUserAdmin();
+      Get.back();
+      return true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     var authservice = ref.watch(authViewModel);
     print('ebuka ${widget.peerid}');
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: false,
-        titleSpacing: 0,
-        title: const Padding(
-          padding: EdgeInsets.only(left: 20),
-          child: Text(
-            'User name',
-            style: TextStyle(color: Colors.black),
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Container(
-              width: 40,
-              decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                      begin: Alignment.topRight,
-                      end: Alignment.bottomLeft,
-                      colors: [
-                        Constants.color1,
-                        Constants.color2,
-                      ])),
-              child: const Icon(
-                Icons.person,
-                color: Colors.white,
-              ),
+    return WillPopScope(
+      onWillPop: _onBackPressed,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: false,
+          titleSpacing: 0,
+          title: Padding(
+            padding: EdgeInsets.only(left: 20),
+            child: Text(
+              widget.name!,
+              style: TextStyle(color: Colors.black),
             ),
-          )
-        ],
-      ),
-      body: GestureDetector(
-        onTap: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              const SizedBox(
-                height: 15,
-              ),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 25,
-                  ),
-                  height: double.infinity,
-                  decoration: const BoxDecoration(
-                    borderRadius:
-                        BorderRadius.only(topRight: Radius.circular(60)),
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                width: 40,
+                decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      begin: Alignment.topRight,
-                      end: Alignment.bottomLeft,
-                      colors: [
-                        Constants.color1,
-                        Constants.color2,
-                      ],
-                    ),
-                  ),
-                  child: StreamBuilder(
-                      stream: firestore
-                          .collection('chat')
-                          .doc(widget.peerid)
-                          .collection('Messages')
-                          .orderBy('timesStamp', descending: true)
-                          .snapshots(),
-                      builder: (context, AsyncSnapshot snapshot) {
-                        if (snapshot.data == null) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        listMessage.addAll(snapshot.data!.docs);
-                        if (!snapshot.hasData) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        if (snapshot.data.docs.isEmpty) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Padding(
-                                  padding: EdgeInsets.only(top: 30),
-                                  child: Icon(
-                                    FontAwesomeIcons.comments,
-                                    size: 100,
-                                  ),
-                                ),
-                                Text(
-                                  'Say Hello',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                )
-                              ],
-                            ),
-                          );
-                        }
-                        return ListView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            shrinkWrap: true,
-                            reverse: true,
-                            controller: listScrollController,
-                            itemCount: snapshot.data.docs.length,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 12.0),
-                                  child: Container(
-                                    padding: const EdgeInsets.only(
-                                        left: 14,
-                                        right: 14,
-                                        top: 10,
-                                        bottom: 10),
-                                    child: Align(
-                                      alignment: (widget.userid ==
-                                              snapshot.data.docs[index]
-                                                  ['idFrom'])
-                                          ? Alignment.topRight
-                                          : Alignment.topLeft,
-                                      child: Column(
-                                        crossAxisAlignment: widget.userid ==
-                                                snapshot.data.docs[index]
-                                                    ['idFrom']
-                                            ? CrossAxisAlignment.end
-                                            : CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(20),
-                                                color: (widget.userid ==
-                                                        snapshot.data
-                                                                .docs[index]
-                                                            ['idFrom'])
-                                                    ? Colors.grey.shade400
-                                                    : Colors.red[200]),
-                                            padding: EdgeInsets.all(16),
-                                            child: Text(
-                                              snapshot.data.docs[index]
-                                                  ['content'],
-                                              style: TextStyle(fontSize: 15),
-                                            ),
-                                          ),
-                                          Icon(
-                                            Icons.done_all,
-                                            color: Colors.grey,
-                                            size: 17,
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ));
-                            });
-                      }),
-                ),
-              ),
-              Container(
-                height: Platform.isIOS ? 70 : 60,
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
+                        colors: [
+                          Constants.color1,
+                          Constants.color2,
+                        ])),
+                child: const Icon(
+                  Icons.person,
                   color: Colors.white,
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextField(
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 15.0,
-                          ),
-                          controller: messagesController,
-                          decoration: const InputDecoration.collapsed(
-                            hintText: 'Type your message...',
-                            hintStyle: TextStyle(color: Colors.grey),
-                          ),
-                          focusNode: focusNode,
-                          maxLines: null,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 40,
-                      height: 45,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topRight,
-                          end: Alignment.bottomLeft,
-                          colors: [
-                            Constants.color1,
-                            Constants.color2,
-                          ],
-                        ),
-                      ),
-                      child: GestureDetector(
-                        onTap: () async {
-                          if (messagesController.text.trim().isNotEmpty &&
-                              messagesController.text.trim() != '') {
-                            authservice.sendMessage(
-                                content: messagesController.text.trim(),
-                                selectedUserID: widget.selectedId,
-                                peerId: widget.peerid);
-                            messagesController.clear();
-                            listScrollController.animateTo(0.0,
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.easeOut);
-                          }
-                        },
-                        child: const Icon(
-                          Icons.send,
-                          size: 20,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
+              ),
+            )
+          ],
+        ),
+        body: GestureDetector(
+          onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 15,
                 ),
-              )
-            ],
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 25,
+                    ),
+                    height: double.infinity,
+                    decoration: const BoxDecoration(
+                      borderRadius:
+                          BorderRadius.only(topRight: Radius.circular(60)),
+                      gradient: LinearGradient(
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
+                        colors: [
+                          Constants.color1,
+                          Constants.color2,
+                        ],
+                      ),
+                    ),
+                    child: StreamBuilder(
+                        stream: firestore
+                            .collection('chat')
+                            .doc(widget.peerid)
+                            .collection('Messages')
+                            .orderBy('timesStamp', descending: true)
+                            .snapshots(),
+                        builder: (context, AsyncSnapshot snapshot) {
+                          if (snapshot.data == null) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          listMessage.addAll(snapshot.data!.docs);
+                          if (!snapshot.hasData) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          if (snapshot.data.docs.isEmpty) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 30),
+                                    child: Icon(
+                                      FontAwesomeIcons.comments,
+                                      size: 100,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Say Hello',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  )
+                                ],
+                              ),
+                            );
+                          }
+                          return ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              shrinkWrap: true,
+                              reverse: true,
+                              controller: listScrollController,
+                              itemCount: snapshot.data.docs.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 12.0),
+                                    child: Container(
+                                      padding: const EdgeInsets.only(
+                                          left: 14,
+                                          right: 14,
+                                          top: 10,
+                                          bottom: 10),
+                                      child: Align(
+                                        alignment: (widget.userid ==
+                                                snapshot.data.docs[index]
+                                                    ['idFrom'])
+                                            ? Alignment.topRight
+                                            : Alignment.topLeft,
+                                        child: Column(
+                                          crossAxisAlignment: widget.userid ==
+                                                  snapshot.data.docs[index]
+                                                      ['idFrom']
+                                              ? CrossAxisAlignment.end
+                                              : CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                  color: (widget.userid ==
+                                                          snapshot.data
+                                                                  .docs[index]
+                                                              ['idFrom'])
+                                                      ? Colors.grey.shade400
+                                                      : Colors.red[200]),
+                                              padding: EdgeInsets.all(16),
+                                              child: Column(
+                                                crossAxisAlignment: widget
+                                                            .userid ==
+                                                        snapshot.data
+                                                                .docs[index]
+                                                            ['idFrom']
+                                                    ? CrossAxisAlignment.end
+                                                    : CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    snapshot.data.docs[index]
+                                                        ['content'],
+                                                    style:
+                                                        TextStyle(fontSize: 15),
+                                                  ),
+                                                  Text(
+                                                    DateFormat('hh:mm a')
+                                                        .format(snapshot
+                                                            .data
+                                                            .docs[index]
+                                                                ['timesStamp']
+                                                            .toDate())
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 10.0,
+                                                        fontStyle:
+                                                            FontStyle.italic),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Icon(
+                                              Icons.done_all,
+                                              color: Colors.grey,
+                                              size: 17,
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ));
+                              });
+                        }),
+                  ),
+                ),
+                Container(
+                  height: Platform.isIOS ? 70 : 60,
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextField(
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 15.0,
+                            ),
+                            controller: messagesController,
+                            decoration: const InputDecoration.collapsed(
+                              hintText: 'Type your message...',
+                              hintStyle: TextStyle(color: Colors.grey),
+                            ),
+                            focusNode: focusNode,
+                            maxLines: null,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 40,
+                        height: 45,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topRight,
+                            end: Alignment.bottomLeft,
+                            colors: [
+                              Constants.color1,
+                              Constants.color2,
+                            ],
+                          ),
+                        ),
+                        child: GestureDetector(
+                          onTap: () async {
+                            if (messagesController.text.trim().isNotEmpty &&
+                                messagesController.text.trim() != '') {
+                              authservice.sendMessage(
+                                  content: messagesController.text.trim(),
+                                  selectedUserID: widget.selectedId,
+                                  peerId: widget.peerid);
+                              messagesController.clear();
+                              authservice.getAllUserAdmin();
+                              listScrollController.animateTo(0.0,
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.easeOut);
+                            }
+                            await ref.watch(authViewModel).getAllUserAdmin();
+                          },
+                          child: const Icon(
+                            Icons.send,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),

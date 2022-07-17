@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vigo/enums/text_field_type_enum.dart';
 import 'package:vigo/providers/auth_provider.dart';
+import 'package:vigo/utils/constants.dart';
 import 'package:vigo/widget/custom_button.dart';
 import 'package:vigo/widget/customfield.dart';
 
@@ -21,7 +22,7 @@ class _RegisterUserState extends ConsumerState<RegisterUser> {
   TextEditingController passController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
- 
+
   @override
   Widget build(BuildContext context) {
     var _authViewModel = ref.watch(authViewModel);
@@ -194,8 +195,35 @@ class _RegisterUserState extends ConsumerState<RegisterUser> {
         child: SizedBox(
           height: 50,
           width: MediaQuery.of(context).size.width,
-          child: CustomButton(
-              title: _authViewModel.signUpLoading
+          child: InkWell(
+            onTap: () {
+              var form = _formKey.currentState;
+              if (form!.validate()) {
+                form.save();
+                _authViewModel.userSignUpService(
+                    email: emailController.text.toString(),
+                    password: passController.text.toString(),
+                    name: nameController.text.toString(),
+                    number: phoneController.text.toString(),
+                    picture: '');
+              } else {}
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                  colors: [
+                    Constants.color1,
+                    Constants.color2,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              // margin: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+              height: 50,
+              width: MediaQuery.of(context).size.width,
+              child: _authViewModel.signUpLoading
                   ? const Center(
                       child: SizedBox(
                         height: 30,
@@ -203,24 +231,14 @@ class _RegisterUserState extends ConsumerState<RegisterUser> {
                         child: CircularProgressIndicator(),
                       ),
                     )
-                  : Text(
-                      'Register',
-                      style: TextStyle(color: Colors.white, fontSize: 17),
+                  : const Center(
+                      child: Text(
+                        "Register",
+                        style: TextStyle(fontSize: 20, color: Colors.white),
+                      ),
                     ),
-              onclick: () {
-                var form = _formKey.currentState;
-                if (form!.validate()) {
-                  form.save();
-                  _authViewModel.userSignUpService(
-                      email: emailController.text.toString(),
-                      password: passController.text.toString(),
-                      name: nameController.text.toString(),
-                      number: phoneController.text.toString(),
-                      picture: '');
-                } else {}
-              },
-              color: Colors.red,
-              borderColor: true),
+            ),
+          ),
         ),
       ),
     );
